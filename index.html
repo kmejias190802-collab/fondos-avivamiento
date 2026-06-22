@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fondos Iglesia</title>
+<style>
+  :root {
+    --azul: #1B3A6B;
+    --azul-claro: #2456A4;
+    --dorado: #C9A84C;
+    --dorado-claro: #F0D080;
+    --fondo: #F4F6FB;
+    --blanco: #FFFFFF;
+    --verde: #1A7A4A;
+    --verde-claro: #E8F5EE;
+    --rojo: #B92B2B;
+    --rojo-claro: #FDEAEA;
+    --texto: #1A1A2E;
+    --texto-suave: #5A6070;
+    --borde: #DDE3F0;
+    --sombra: 0 2px 12px rgba(27,58,107,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--fondo); color: var(--texto); min-height: 100vh; }
+
+  /* NAV */
+  nav { background: var(--azul); color: white; padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; height: 60px; box-shadow: 0 2px 8px rgba(0,0,0,0.18); position: sticky; top: 0; z-index: 100; }
+  .nav-logo { display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: 700; letter-spacing: 0.3px; }
+  .nav-logo span { color: var(--dorado); }
+  .nav-tabs { display: flex; gap: 4px; }
+  .nav-tab { background: none; border: none; color: rgba(255,255,255,0.7); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+  .nav-tab:hover { background: rgba(255,255,255,0.1); color: white; }
+  .nav-tab.active { background: rgba(201,168,76,0.25); color: var(--dorado-claro); }
+  .nav-right { display: flex; align-items: center; gap: 10px; }
+  #btn-login { background: var(--dorado); color: var(--azul); border: none; padding: 7px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.85rem; }
+  #btn-logout { background: rgba(255,255,255,0.12); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 7px 14px; border-radius: 8px; cursor: pointer; font-size: 0.82rem; display: none; }
+  #admin-badge { background: var(--dorado); color: var(--azul); padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: none; }
+
+  /* MAIN */
+  main { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+
+  /* PAGES */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* TARJETAS RESUMEN */
+  .resumen-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+  .card-resumen { background: var(--blanco); border-radius: 14px; padding: 1.2rem 1.4rem; box-shadow: var(--sombra); border-left: 5px solid var(--azul); }
+  .card-resumen.verde { border-left-color: var(--verde); }
+  .card-resumen.rojo { border-left-color: var(--rojo); }
+  .card-resumen.dorado { border-left-color: var(--dorado); }
+  .card-resumen label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--texto-suave); font-weight: 600; }
+  .card-resumen .monto { font-size: 1.65rem; font-weight: 800; margin-top: 4px; color: var(--texto); }
+  .card-resumen .sub { font-size: 0.78rem; color: var(--texto-suave); margin-top: 2px; }
+
+  /* BARRA PROGRESO */
+  .progreso-wrap { background: var(--blanco); border-radius: 14px; padding: 1.2rem 1.4rem; box-shadow: var(--sombra); margin-bottom: 1.5rem; }
+  .progreso-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .progreso-header span { font-size: 0.85rem; color: var(--texto-suave); }
+  .progreso-bar-bg { background: #E5EAF5; border-radius: 99px; height: 14px; overflow: hidden; }
+  .progreso-bar { background: linear-gradient(90deg, var(--verde), #2AA56A); height: 100%; border-radius: 99px; transition: width 0.5s; }
+  .progreso-labels { display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.78rem; color: var(--texto-suave); }
+
+  /* SECCIÓN */
+  .seccion { background: var(--blanco); border-radius: 14px; box-shadow: var(--sombra); overflow: hidden; margin-bottom: 1.5rem; }
+  .seccion-header { padding: 1rem 1.4rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--borde); }
+  .seccion-titulo { font-size: 1rem; font-weight: 700; color: var(--azul); }
+  .seccion-body { padding: 1rem 1.4rem; }
+
+  /* FILTROS */
+  .filtros { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .filtros input, .filtros select { border: 1px solid var(--borde); border-radius: 8px; padding: 7px 12px; font-size: 0.85rem; color: var(--texto); background: var(--fondo); outline: none; }
+  .filtros input:focus, .filtros select:focus { border-color: var(--azul-claro); }
+
+  /* TABLA */
+  .tabla-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  th { background: var(--fondo); color: var(--texto-suave); font-weight: 600; text-align: left; padding: 9px 12px; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--borde); white-space: nowrap; }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--borde); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #F8F9FE; }
+  .monto-positivo { color: var(--verde); font-weight: 700; }
+  .monto-negativo { color: var(--rojo); font-weight: 700; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+  .badge-verde { background: var(--verde-claro); color: var(--verde); }
+  .badge-rojo { background: var(--rojo-claro); color: var(--rojo); }
+  .empty-msg { text-align: center; color: var(--texto-suave); padding: 2rem; font-size: 0.9rem; }
+
+  /* BOTONES */
+  .btn { border: none; border-radius: 8px; padding: 8px 16px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.18s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-primary { background: var(--azul); color: white; }
+  .btn-primary:hover { background: var(--azul-claro); }
+  .btn-verde { background: var(--verde); color: white; }
+  .btn-verde:hover { background: #145E38; }
+  .btn-rojo { background: var(--rojo); color: white; }
+  .btn-rojo:hover { background: #8B1E1E; }
+  .btn-sm { padding: 5px 10px; font-size: 0.78rem; }
+  .btn-ghost { background: transparent; color: var(--texto-suave); border: 1px solid var(--borde); }
+  .btn-ghost:hover { background: var(--fondo); }
+  .admin-only { display: none; }
+  body.is-admin .admin-only { display: inline-flex; }
+  body.is-admin #btn-logout { display: inline-block; }
+  body.is-admin #admin-badge { display: inline-block; }
+  body.is-admin #btn-login { display: none; }
+
+  /* MODAL */
+  .modal-bg { display: none; position: fixed; inset: 0; background: rgba(10,20,50,0.45); z-index: 200; align-items: center; justify-content: center; padding: 1rem; }
+  .modal-bg.open { display: flex; }
+  .modal { background: var(--blanco); border-radius: 16px; padding: 1.8rem; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,0.18); }
+  .modal h3 { font-size: 1.1rem; color: var(--azul); margin-bottom: 1.2rem; }
+  .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.2rem; }
+
+  /* FORM */
+  .form-group { margin-bottom: 1rem; }
+  .form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--texto-suave); margin-bottom: 4px; }
+  .form-group input, .form-group textarea, .form-group select { width: 100%; border: 1px solid var(--borde); border-radius: 8px; padding: 9px 12px; font-size: 0.9rem; color: var(--texto); outline: none; font-family: inherit; }
+  .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--azul-claro); box-shadow: 0 0 0 3px rgba(36,86,164,0.1); }
+  .form-group textarea { resize: vertical; min-height: 70px; }
+
+
+
+  /* LOGIN MODAL */
+  #modal-login .modal { max-width: 360px; }
+
+  /* ALERTAS */
+  .alerta { padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 1rem; }
+  .alerta-error { background: var(--rojo-claro); color: var(--rojo); border: 1px solid #F5C0C0; }
+  .alerta-ok { background: var(--verde-claro); color: var(--verde); border: 1px solid #A8DFC0; }
+
+  /* GRAFICA MINI */
+  .grafica-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+  .donut-wrap { background: var(--blanco); border-radius: 14px; padding: 1.2rem; box-shadow: var(--sombra); display: flex; flex-direction: column; align-items: center; }
+  .donut-wrap h4 { font-size: 0.85rem; color: var(--texto-suave); margin-bottom: 0.8rem; font-weight: 600; }
+  canvas.donut { max-width: 140px; }
+  .donut-leyenda { margin-top: 10px; font-size: 0.78rem; color: var(--texto-suave); text-align: center; }
+
+  @media(max-width: 600px) {
+    .nav-tabs { display: none; }
+    .resumen-grid { grid-template-columns: 1fr 1fr; }
+    .grafica-mini { grid-template-columns: 1fr; }
+    .card-resumen .monto { font-size: 1.3rem; }
+    nav { padding: 0 1rem; }
+    .mobile-tabs { display: flex !important; }
+  }
+  .mobile-tabs { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--azul); z-index: 100; border-top: 1px solid rgba(255,255,255,0.1); }
+  .mobile-tab { flex: 1; background: none; border: none; color: rgba(255,255,255,0.6); padding: 10px 4px 8px; font-size: 0.68rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .mobile-tab svg { width: 22px; height: 22px; }
+  .mobile-tab.active { color: var(--dorado-claro); }
+  @media(max-width: 600px) { main { padding-bottom: 5rem; } }
+
+  .config-box { background: var(--fondo); border: 1px solid var(--borde); border-radius: 10px; padding: 1rem; margin-bottom: 1rem; font-size: 0.85rem; }
+  .config-box code { background: #E8EDF8; padding: 2px 6px; border-radius: 4px; font-size: 0.82rem; color: var(--azul); }
+  .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    Fondos <span>Iglesia</span>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="mostrarPagina('inicio')">Inicio</button>
+    <button class="nav-tab" onclick="mostrarPagina('ingresos')">Ingresos</button>
+    <button class="nav-tab" onclick="mostrarPagina('egresos')">Egresos</button>
+    <button class="nav-tab admin-only" onclick="mostrarPagina('config')" style="display:none">Configuración</button>
+  </div>
+  <div class="nav-right">
+    <span id="admin-badge">ADMIN</span>
+    <button id="btn-login" onclick="abrirLogin()">Iniciar sesión</button>
+    <button id="btn-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+  </div>
+</nav>
+
+<!-- MOBILE TABS -->
+<div class="mobile-tabs">
+  <button class="mobile-tab active" onclick="mostrarPagina('inicio')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+    Inicio
+  </button>
+  <button class="mobile-tab" onclick="mostrarPagina('ingresos')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 5 5 12"/></svg>
+    Ingresos
+  </button>
+  <button class="mobile-tab" onclick="mostrarPagina('egresos')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 19 19 12"/></svg>
+    Egresos
+  </button>
+</div>
+
+<main>
+
+<!-- ===== INICIO ===== -->
+<div id="page-inicio" class="page active">
+  <div class="resumen-grid">
+    <div class="card-resumen verde">
+      <label>Total recolectado</label>
+      <div class="monto" id="total-ingresos">₡0</div>
+      <div class="sub" id="sub-ingresos">0 personas</div>
+    </div>
+    <div class="card-resumen rojo">
+      <label>Total gastado</label>
+      <div class="monto" id="total-egresos">₡0</div>
+      <div class="sub" id="sub-egresos">0 gastos</div>
+    </div>
+    <div class="card-resumen dorado">
+      <label>Saldo disponible</label>
+      <div class="monto" id="saldo">₡0</div>
+      <div class="sub" id="sub-saldo">—</div>
+    </div>
+    <div class="card-resumen">
+      <label>Promedio por persona</label>
+      <div class="monto" id="promedio">₡0</div>
+      <div class="sub">por aportante</div>
+    </div>
+  </div>
+
+  <div class="progreso-wrap">
+    <div class="progreso-header">
+      <strong style="font-size:0.9rem; color:var(--azul)">Uso de fondos recolectados</strong>
+      <span id="progreso-pct">0%</span>
+    </div>
+    <div class="progreso-bar-bg"><div class="progreso-bar" id="progreso-bar" style="width:0%"></div></div>
+    <div class="progreso-labels">
+      <span>₡0 gastado</span>
+      <span id="progreso-total">₡0 recolectado</span>
+    </div>
+  </div>
+
+  <div class="grafica-mini" id="graficas-wrap">
+    <div class="donut-wrap">
+      <h4>Distribución de gastos</h4>
+      <canvas class="donut" id="chart-egresos" width="140" height="140"></canvas>
+      <div class="donut-leyenda" id="leyenda-egresos">Sin datos aún</div>
+    </div>
+    <div class="donut-wrap">
+      <h4>Mayores aportantes</h4>
+      <canvas class="donut" id="chart-ingresos" width="140" height="140"></canvas>
+      <div class="donut-leyenda" id="leyenda-ingresos">Sin datos aún</div>
+    </div>
+  </div>
+
+  <!-- Últimos movimientos -->
+  <div class="seccion">
+    <div class="seccion-header">
+      <span class="seccion-titulo">Últimos movimientos</span>
+    </div>
+    <div class="tabla-wrap">
+      <table>
+        <thead><tr><th>Fecha</th><th>Tipo</th><th>Descripción</th><th>Monto</th></tr></thead>
+        <tbody id="tabla-movimientos"><tr><td colspan="4" class="empty-msg">Cargando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== INGRESOS ===== -->
+<div id="page-ingresos" class="page">
+  <div class="seccion">
+    <div class="seccion-header">
+      <span class="seccion-titulo">Personas y aportaciones</span>
+      <button class="btn btn-verde admin-only" onclick="abrirModalIngreso()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Agregar
+      </button>
+    </div>
+    <div class="seccion-body">
+      <div class="filtros">
+        <input type="text" id="buscar-ingreso" placeholder="🔍 Buscar persona..." oninput="filtrarIngresos()" style="min-width:180px">
+        <select id="orden-ingreso" onchange="filtrarIngresos()">
+          <option value="fecha-desc">Más reciente</option>
+          <option value="fecha-asc">Más antiguo</option>
+          <option value="monto-desc">Mayor monto</option>
+          <option value="monto-asc">Menor monto</option>
+          <option value="nombre-asc">Nombre A-Z</option>
+        </select>
+      </div>
+    </div>
+    <div class="tabla-wrap">
+      <table>
+        <thead><tr><th>Nombre</th><th>Monto</th><th>Fecha</th><th>Detalle</th><th class="admin-only">Acciones</th></tr></thead>
+        <tbody id="tabla-ingresos"><tr><td colspan="5" class="empty-msg">Cargando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EGRESOS ===== -->
+<div id="page-egresos" class="page">
+  <div class="seccion">
+    <div class="seccion-header">
+      <span class="seccion-titulo">Gastos y egresos</span>
+      <button class="btn btn-rojo admin-only" onclick="abrirModalEgreso()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Agregar gasto
+      </button>
+    </div>
+    <div class="seccion-body">
+      <div class="filtros">
+        <input type="text" id="buscar-egreso" placeholder="🔍 Buscar gasto..." oninput="filtrarEgresos()" style="min-width:180px">
+        <select id="categoria-egreso" onchange="filtrarEgresos()">
+          <option value="">Todas las categorías</option>
+          <option value="Materiales">Materiales</option>
+          <option value="Servicios">Servicios</option>
+          <option value="Equipos">Equipos</option>
+          <option value="Alimentación">Alimentación</option>
+          <option value="Transporte">Transporte</option>
+          <option value="Otro">Otro</option>
+        </select>
+        <select id="orden-egreso" onchange="filtrarEgresos()">
+          <option value="fecha-desc">Más reciente</option>
+          <option value="fecha-asc">Más antiguo</option>
+          <option value="monto-desc">Mayor monto</option>
+          <option value="monto-asc">Menor monto</option>
+        </select>
+      </div>
+    </div>
+    <div class="tabla-wrap">
+      <table>
+        <thead><tr><th>Descripción</th><th>Categoría</th><th>Monto</th><th>Fecha</th><th>Detalle</th><th class="admin-only">Acciones</th></tr></thead>
+        <tbody id="tabla-egresos"><tr><td colspan="7" class="empty-msg">Cargando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CONFIG ===== -->
+<div id="page-config" class="page">
+  <div class="seccion">
+    <div class="seccion-header"><span class="seccion-titulo">Configuración</span></div>
+    <div class="seccion-body">
+      <div class="config-box">
+        <strong>⚙️ Conexión Firebase</strong><br><br>
+        Pegá aquí tu configuración de Firebase:<br><br>
+        <div class="form-group"><label>API Key</label><input type="text" id="cfg-apiKey" placeholder="AIza..."></div>
+        <div class="form-group"><label>Auth Domain</label><input type="text" id="cfg-authDomain" placeholder="mi-proyecto.firebaseapp.com"></div>
+        <div class="form-group"><label>Project ID</label><input type="text" id="cfg-projectId" placeholder="mi-proyecto"></div>
+        <div class="form-group"><label>Storage Bucket</label><input type="text" id="cfg-storageBucket" placeholder="mi-proyecto.appspot.com"></div>
+        <div class="form-group"><label>App ID</label><input type="text" id="cfg-appId" placeholder="1:123456:web:abc..."></div>
+        <button class="btn btn-primary" onclick="guardarConfig()">Guardar y reconectar</button>
+      </div>
+      <div id="alerta-config"></div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- ===== MODALES ===== -->
+
+<!-- Login -->
+<div class="modal-bg" id="modal-login">
+  <div class="modal">
+    <h3>🔐 Acceso administrador</h3>
+    <div id="alerta-login"></div>
+    <div class="form-group"><label>Correo electrónico</label><input type="email" id="login-email" placeholder="admin@correo.com"></div>
+    <div class="form-group"><label>Contraseña</label><input type="password" id="login-pass" placeholder="••••••••"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="cerrarModal('modal-login')">Cancelar</button>
+      <button class="btn btn-primary" onclick="iniciarSesion()">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Ingreso -->
+<div class="modal-bg" id="modal-ingreso">
+  <div class="modal">
+    <h3 id="titulo-modal-ingreso">Agregar aportación</h3>
+    <div class="form-group"><label>Nombre de la persona *</label><input type="text" id="ing-nombre" placeholder="Juan Pérez"></div>
+    <div class="form-group"><label>Monto (₡) *</label><input type="number" id="ing-monto" placeholder="50000" min="0"></div>
+    <div class="form-group"><label>Fecha *</label><input type="date" id="ing-fecha"></div>
+    <div class="form-group"><label>Detalle / observación</label><textarea id="ing-detalle" placeholder="Ofrenda dominical, promesa, etc."></textarea></div>
+    <input type="hidden" id="ing-id">
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="cerrarModal('modal-ingreso')">Cancelar</button>
+      <button class="btn btn-verde" onclick="guardarIngreso()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Egreso -->
+<div class="modal-bg" id="modal-egreso">
+  <div class="modal">
+    <h3 id="titulo-modal-egreso">Agregar gasto</h3>
+    <div class="form-group"><label>Descripción *</label><input type="text" id="eg-desc" placeholder="Compra de sillas"></div>
+    <div class="form-group"><label>Categoría</label>
+      <select id="eg-cat">
+        <option value="Materiales">Materiales</option>
+        <option value="Servicios">Servicios</option>
+        <option value="Equipos">Equipos</option>
+        <option value="Alimentación">Alimentación</option>
+        <option value="Transporte">Transporte</option>
+        <option value="Otro">Otro</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Monto (₡) *</label><input type="number" id="eg-monto" placeholder="150000" min="0"></div>
+    <div class="form-group"><label>Fecha *</label><input type="date" id="eg-fecha"></div>
+    <div class="form-group"><label>Detalle / observación</label><textarea id="eg-detalle" placeholder="A quién se le pagó, para qué, etc."></textarea></div>
+    <input type="hidden" id="eg-id">
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="cerrarModal('modal-egreso')">Cancelar</button>
+      <button class="btn btn-rojo" onclick="guardarEgreso()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script>
+// ============================================================
+// CONFIGURACIÓN FIREBASE
+// Reemplazá estos valores con los de tu proyecto Firebase
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyBq0LKrOxZ4OvjyQYGA3uANiB4kcQcBGqs",
+  authDomain: "fondos-avivamiento.firebaseapp.com",
+  projectId: "fondos-avivamiento",
+  storageBucket: "fondos-avivamiento.firebasestorage.app",
+  messagingSenderId: "1041040134657",
+  appId: "1:1041040134657:web:3199ea10f2f169ced52600"
+};
+// ============================================================
+
+let app, auth, db;
+let ingresos = [], egresos = [];
+let esAdmin = false;
+
+function inicializarFirebase(config) {
+  try {
+    if (firebase.apps.length) firebase.apps[0].delete();
+  } catch(e){}
+  app = firebase.initializeApp(config);
+  auth = firebase.auth();
+  db = firebase.firestore();
+
+  auth.onAuthStateChanged(user => {
+    esAdmin = !!user;
+    document.body.classList.toggle('is-admin', esAdmin);
+    if (esAdmin) {
+      document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
+      // Mostrar tab config en desktop
+      document.querySelector('.nav-tab:last-child').style.display = '';
+    } else {
+      document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+      document.querySelector('.nav-tab:last-child').style.display = 'none';
+    }
+    cargarDatos();
+  });
+}
+
+// Cargar config guardada o usar la del código
+function obtenerConfig() {
+  const guardada = localStorage.getItem('fb-config');
+  if (guardada) return JSON.parse(guardada);
+  return FIREBASE_CONFIG;
+}
+
+function guardarConfig() {
+  const config = {
+    apiKey: document.getElementById('cfg-apiKey').value.trim(),
+    authDomain: document.getElementById('cfg-authDomain').value.trim(),
+    projectId: document.getElementById('cfg-projectId').value.trim(),
+    storageBucket: document.getElementById('cfg-storageBucket').value.trim(),
+    appId: document.getElementById('cfg-appId').value.trim()
+  };
+  localStorage.setItem('fb-config', JSON.stringify(config));
+  inicializarFirebase(config);
+  mostrarAlerta('alerta-config', 'Configuración guardada. Reconectando...', 'ok');
+}
+
+// CARGAR DATOS
+function cargarDatos() {
+  if (!db) return;
+
+  db.collection('ingresos').orderBy('fecha', 'desc').onSnapshot(snap => {
+    ingresos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderTablaIngresos(ingresos);
+    actualizarResumen();
+  }, err => console.warn('Ingresos:', err));
+
+  db.collection('egresos').orderBy('fecha', 'desc').onSnapshot(snap => {
+    egresos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderTablaEgresos(egresos);
+    actualizarResumen();
+  }, err => console.warn('Egresos:', err));
+}
+
+// FORMATO
+function fmt(n) {
+  return '₡' + Number(n || 0).toLocaleString('es-CR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+function fmtFecha(f) {
+  if (!f) return '—';
+  const d = new Date(f + 'T00:00:00');
+  return d.toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+function hoy() {
+  return new Date().toISOString().split('T')[0];
+}
+
+// RESUMEN
+function actualizarResumen() {
+  const totalIng = ingresos.reduce((s, x) => s + Number(x.monto || 0), 0);
+  const totalEg = egresos.reduce((s, x) => s + Number(x.monto || 0), 0);
+  const saldo = totalIng - totalEg;
+  const pct = totalIng > 0 ? Math.min(100, (totalEg / totalIng * 100)) : 0;
+  const prom = ingresos.length > 0 ? totalIng / ingresos.length : 0;
+
+  document.getElementById('total-ingresos').textContent = fmt(totalIng);
+  document.getElementById('sub-ingresos').textContent = ingresos.length + ' persona' + (ingresos.length !== 1 ? 's' : '');
+  document.getElementById('total-egresos').textContent = fmt(totalEg);
+  document.getElementById('sub-egresos').textContent = egresos.length + ' gasto' + (egresos.length !== 1 ? 's' : '');
+  document.getElementById('saldo').textContent = fmt(saldo);
+  document.getElementById('sub-saldo').textContent = saldo >= 0 ? 'Saldo positivo ✓' : '⚠ Déficit';
+  document.getElementById('saldo').style.color = saldo >= 0 ? 'var(--verde)' : 'var(--rojo)';
+  document.getElementById('promedio').textContent = fmt(prom);
+  document.getElementById('progreso-pct').textContent = pct.toFixed(1) + '%';
+  document.getElementById('progreso-bar').style.width = pct + '%';
+  document.getElementById('progreso-bar').style.background = pct > 90 ? 'var(--rojo)' : pct > 70 ? '#E08A00' : 'linear-gradient(90deg, var(--verde), #2AA56A)';
+  document.getElementById('progreso-total').textContent = fmt(totalIng) + ' recolectado';
+
+  renderMovimientos();
+  renderGraficas(totalIng, totalEg);
+}
+
+// MOVIMIENTOS RECIENTES
+function renderMovimientos() {
+  const todos = [
+    ...ingresos.map(x => ({ ...x, tipo: 'ingreso' })),
+    ...egresos.map(x => ({ ...x, tipo: 'egreso' }))
+  ].sort((a, b) => (b.fecha || '').localeCompare(a.fecha || '')).slice(0, 10);
+
+  const tbody = document.getElementById('tabla-movimientos');
+  if (todos.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="empty-msg">Sin movimientos aún</td></tr>'; return; }
+  tbody.innerHTML = todos.map(m => `
+    <tr>
+      <td>${fmtFecha(m.fecha)}</td>
+      <td><span class="badge ${m.tipo === 'ingreso' ? 'badge-verde' : 'badge-rojo'}">${m.tipo === 'ingreso' ? '↑ Ingreso' : '↓ Egreso'}</span></td>
+      <td>${m.tipo === 'ingreso' ? (m.nombre || '—') : (m.descripcion || '—')}</td>
+      <td class="${m.tipo === 'ingreso' ? 'monto-positivo' : 'monto-negativo'}">${m.tipo === 'ingreso' ? '+' : '-'}${fmt(m.monto)}</td>
+    </tr>`).join('');
+}
+
+// TABLA INGRESOS
+function renderTablaIngresos(data) {
+  const tbody = document.getElementById('tabla-ingresos');
+  if (data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="empty-msg">No hay aportaciones registradas</td></tr>'; return; }
+  tbody.innerHTML = data.map(r => `
+    <tr>
+      <td><strong>${r.nombre || '—'}</strong></td>
+      <td class="monto-positivo">${fmt(r.monto)}</td>
+      <td>${fmtFecha(r.fecha)}</td>
+      <td style="font-size:0.82rem; color:var(--texto-suave); max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${r.detalle || '—'}</td>
+      <td class="admin-only">
+        <button class="btn btn-ghost btn-sm" onclick="editarIngreso('${r.id}')">✏️</button>
+        <button class="btn btn-ghost btn-sm" onclick="eliminarIngreso('${r.id}')">🗑️</button>
+      </td>
+    </tr>`).join('');
+}
+
+// TABLA EGRESOS
+function renderTablaEgresos(data) {
+  const tbody = document.getElementById('tabla-egresos');
+  if (data.length === 0) { tbody.innerHTML = '<tr><td colspan="7" class="empty-msg">No hay gastos registrados</td></tr>'; return; }
+  tbody.innerHTML = data.map(r => `
+    <tr>
+      <td><strong>${r.descripcion || '—'}</strong></td>
+      <td><span class="badge badge-rojo">${r.categoria || 'Otro'}</span></td>
+      <td class="monto-negativo">${fmt(r.monto)}</td>
+      <td>${fmtFecha(r.fecha)}</td>
+      <td style="font-size:0.82rem; color:var(--texto-suave); max-width:160px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${r.detalle || '—'}</td>
+      <td class="admin-only">
+        <button class="btn btn-ghost btn-sm" onclick="editarEgreso('${r.id}')">✏️</button>
+        <button class="btn btn-ghost btn-sm" onclick="eliminarEgreso('${r.id}')">🗑️</button>
+      </td>
+    </tr>`).join('');
+}
+
+// FILTROS
+function filtrarIngresos() {
+  const q = document.getElementById('buscar-ingreso').value.toLowerCase();
+  const ord = document.getElementById('orden-ingreso').value;
+  let data = ingresos.filter(x => (x.nombre || '').toLowerCase().includes(q) || (x.detalle || '').toLowerCase().includes(q));
+  data = ordenar(data, ord);
+  renderTablaIngresos(data);
+}
+function filtrarEgresos() {
+  const q = document.getElementById('buscar-egreso').value.toLowerCase();
+  const cat = document.getElementById('categoria-egreso').value;
+  const ord = document.getElementById('orden-egreso').value;
+  let data = egresos.filter(x =>
+    ((x.descripcion || '').toLowerCase().includes(q) || (x.detalle || '').toLowerCase().includes(q)) &&
+    (cat === '' || x.categoria === cat)
+  );
+  data = ordenar(data, ord);
+  renderTablaEgresos(data);
+}
+function ordenar(arr, ord) {
+  return [...arr].sort((a, b) => {
+    if (ord === 'fecha-desc') return (b.fecha || '').localeCompare(a.fecha || '');
+    if (ord === 'fecha-asc') return (a.fecha || '').localeCompare(b.fecha || '');
+    if (ord === 'monto-desc') return Number(b.monto) - Number(a.monto);
+    if (ord === 'monto-asc') return Number(a.monto) - Number(b.monto);
+    if (ord === 'nombre-asc') return (a.nombre || '').localeCompare(b.nombre || '');
+    return 0;
+  });
+}
+
+// MODALES
+function abrirLogin() { document.getElementById('modal-login').classList.add('open'); }
+function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function abrirModalIngreso() {
+  document.getElementById('titulo-modal-ingreso').textContent = 'Agregar aportación';
+  document.getElementById('ing-nombre').value = '';
+  document.getElementById('ing-monto').value = '';
+  document.getElementById('ing-fecha').value = hoy();
+  document.getElementById('ing-detalle').value = '';
+  document.getElementById('ing-id').value = '';
+  document.getElementById('modal-ingreso').classList.add('open');
+}
+function editarIngreso(id) {
+  const r = ingresos.find(x => x.id === id);
+  if (!r) return;
+  document.getElementById('titulo-modal-ingreso').textContent = 'Editar aportación';
+  document.getElementById('ing-nombre').value = r.nombre || '';
+  document.getElementById('ing-monto').value = r.monto || '';
+  document.getElementById('ing-fecha').value = r.fecha || hoy();
+  document.getElementById('ing-detalle').value = r.detalle || '';
+  document.getElementById('ing-id').value = id;
+  document.getElementById('modal-ingreso').classList.add('open');
+}
+
+function abrirModalEgreso() {
+  document.getElementById('titulo-modal-egreso').textContent = 'Agregar gasto';
+  document.getElementById('eg-desc').value = '';
+  document.getElementById('eg-cat').value = 'Materiales';
+  document.getElementById('eg-monto').value = '';
+  document.getElementById('eg-fecha').value = hoy();
+  document.getElementById('eg-detalle').value = '';
+  document.getElementById('eg-id').value = '';
+  document.getElementById('modal-egreso').classList.add('open');
+}
+function editarEgreso(id) {
+  const r = egresos.find(x => x.id === id);
+  if (!r) return;
+  document.getElementById('titulo-modal-egreso').textContent = 'Editar gasto';
+  document.getElementById('eg-desc').value = r.descripcion || '';
+  document.getElementById('eg-cat').value = r.categoria || 'Materiales';
+  document.getElementById('eg-monto').value = r.monto || '';
+  document.getElementById('eg-fecha').value = r.fecha || hoy();
+  document.getElementById('eg-detalle').value = r.detalle || '';
+  document.getElementById('eg-id').value = id;
+  document.getElementById('modal-egreso').classList.add('open');
+}
+
+// GUARDAR INGRESO
+async function guardarIngreso() {
+  const nombre = document.getElementById('ing-nombre').value.trim();
+  const monto = Number(document.getElementById('ing-monto').value);
+  const fecha = document.getElementById('ing-fecha').value;
+  const detalle = document.getElementById('ing-detalle').value.trim();
+  const id = document.getElementById('ing-id').value;
+
+  if (!nombre || !monto || !fecha) { alert('Completá nombre, monto y fecha.'); return; }
+
+  const data = { nombre, monto, fecha, detalle, updatedAt: new Date().toISOString() };
+  try {
+    if (id) {
+      await db.collection('ingresos').doc(id).update(data);
+    } else {
+      data.createdAt = new Date().toISOString();
+      await db.collection('ingresos').add(data);
+    }
+    cerrarModal('modal-ingreso');
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+// GUARDAR EGRESO
+async function guardarEgreso() {
+  const descripcion = document.getElementById('eg-desc').value.trim();
+  const categoria = document.getElementById('eg-cat').value;
+  const monto = Number(document.getElementById('eg-monto').value);
+  const fecha = document.getElementById('eg-fecha').value;
+  const detalle = document.getElementById('eg-detalle').value.trim();
+  const id = document.getElementById('eg-id').value;
+
+  if (!descripcion || !monto || !fecha) { alert('Completá descripción, monto y fecha.'); return; }
+
+  const data = { descripcion, categoria, monto, fecha, detalle, updatedAt: new Date().toISOString() };
+  try {
+    if (id) {
+      await db.collection('egresos').doc(id).update(data);
+    } else {
+      data.createdAt = new Date().toISOString();
+      await db.collection('egresos').add(data);
+    }
+    cerrarModal('modal-egreso');
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+// ELIMINAR
+async function eliminarIngreso(id) {
+  if (!confirm('¿Eliminar esta aportación?')) return;
+  await db.collection('ingresos').doc(id).delete();
+}
+async function eliminarEgreso(id) {
+  if (!confirm('¿Eliminar este gasto?')) return;
+  await db.collection('egresos').doc(id).delete();
+}
+
+// AUTH
+async function iniciarSesion() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const alerta = document.getElementById('alerta-login');
+  try {
+    await auth.signInWithEmailAndPassword(email, pass);
+    cerrarModal('modal-login');
+    alerta.innerHTML = '';
+  } catch(e) {
+    alerta.innerHTML = `<div class="alerta alerta-error">Credenciales incorrectas.</div>`;
+  }
+}
+async function cerrarSesion() {
+  await auth.signOut();
+}
+
+function mostrarAlerta(id, msg, tipo) {
+  document.getElementById(id).innerHTML = `<div class="alerta alerta-${tipo === 'ok' ? 'ok' : 'error'}">${msg}</div>`;
+  setTimeout(() => { const el = document.getElementById(id); if(el) el.innerHTML = ''; }, 3000);
+}
+
+// NAVEGACIÓN
+function mostrarPagina(nombre) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab, .mobile-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + nombre).classList.add('active');
+  document.querySelectorAll(`[onclick="mostrarPagina('${nombre}')"]`).forEach(t => t.classList.add('active'));
+}
+
+// GRÁFICAS DONUT
+function renderGraficas(totalIng, totalEg) {
+  // Gráfica egresos por categoría
+  const cats = {};
+  egresos.forEach(e => { cats[e.categoria || 'Otro'] = (cats[e.categoria || 'Otro'] || 0) + Number(e.monto || 0); });
+  const labels1 = Object.keys(cats);
+  const vals1 = Object.values(cats);
+  dibujarDonut('chart-egresos', labels1, vals1, 'leyenda-egresos', ['#B92B2B','#C0392B','#E74C3C','#F39C12','#8E44AD','#2980B9']);
+
+  // Gráfica top aportantes
+  const top = [...ingresos].sort((a,b) => Number(b.monto)-Number(a.monto)).slice(0,5);
+  const labels2 = top.map(x => x.nombre || '?');
+  const vals2 = top.map(x => Number(x.monto));
+  dibujarDonut('chart-ingresos', labels2, vals2, 'leyenda-ingresos', ['#1A7A4A','#27AE60','#2ECC71','#52D68A','#A8E6C0']);
+}
+
+function dibujarDonut(canvasId, labels, valores, leyendaId, colores) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  const total = valores.reduce((s,v) => s+v, 0);
+  const leyenda = document.getElementById(leyendaId);
+
+  if (total === 0 || labels.length === 0) {
+    ctx.clearRect(0,0,140,140);
+    ctx.fillStyle = '#E5EAF5';
+    ctx.beginPath(); ctx.arc(70,70,55,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(70,70,35,0,Math.PI*2); ctx.fill();
+    leyenda.textContent = 'Sin datos aún';
+    return;
+  }
+
+  ctx.clearRect(0,0,140,140);
+  let ang = -Math.PI/2;
+  valores.forEach((val, i) => {
+    const slice = (val / total) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(70,70);
+    ctx.arc(70,70,55,ang,ang+slice);
+    ctx.closePath();
+    ctx.fillStyle = colores[i % colores.length];
+    ctx.fill();
+    ang += slice;
+  });
+  // Hueco
+  ctx.beginPath(); ctx.arc(70,70,35,0,Math.PI*2);
+  ctx.fillStyle = '#fff'; ctx.fill();
+
+  // Leyenda texto
+  leyenda.innerHTML = labels.slice(0,3).map((l,i) =>
+    `<span style="color:${colores[i%colores.length]}">●</span> ${l}: ${fmt(valores[i])}`
+  ).join('<br>');
+}
+
+// Cerrar modales al hacer click fuera
+document.querySelectorAll('.modal-bg').forEach(bg => {
+  bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('open'); });
+});
+
+// Enter en login
+document.getElementById('login-pass').addEventListener('keydown', e => { if(e.key==='Enter') iniciarSesion(); });
+
+// INIT
+inicializarFirebase(obtenerConfig());
+</script>
+</body>
+</html>
