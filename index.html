@@ -459,7 +459,7 @@ function inicializarFirebase(config) {
 function obtenerConfig() {
   const guardada = localStorage.getItem('fb-config');
   if (guardada) return JSON.parse(guardada);
-  return FIREBASE_CONFIG;
+  return firebaseConfig;
 }
 
 function guardarConfig() {
